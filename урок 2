@@ -1,1 +1,148 @@
+# final/ДЗ_2.py
+# Итоговое решение для ДЗ 2: математические вычисления + шапка суда
+# Данные по судам введены вручную, данные истца/ответчика — примеры
 
+from math import factorial as _factorial
+from typing import List, Dict
+
+# 1) Математические функции
+
+def factorial(n: int) -> int:
+    """
+    Вычисляет факториал числа n (n!).
+    Принимает неотрицательное целое число n, возвращает факториал.
+    """
+    if not isinstance(n, int) or n < 0:
+        raise ValueError("n должен быть неотрицательным целым числом")
+    return _factorial(n)
+
+def max_of_three(t: tuple) -> int:
+    """
+    Находит наибольшее число среди трёх значений.
+    Принимает кортеж из трёх чисел (a, b, c), возвращает максимум.
+    """
+    if not isinstance(t, tuple) or len(t) != 3:
+        raise ValueError("t должен быть кортежем из трёх элементов")
+    a, b, c = t
+    return max(a, b, c)
+
+def area_of_right_triangle(a: float, b: float) -> float:
+    """
+    Вычисляет площадь прямоугольного треугольника по катетам a и b.
+    P = 0.5 * a * b
+    """
+    if a < 0 or b <0:
+        raise ValueError("Катеты должны быть неотрицательными")
+    return 0.5 * a * b
+
+# 2) Данные по судам (ручной ввод)
+_saks_data: Dict[str, Dict[str, str]] = {
+    "A40-123456/2023": {
+        "court_name": "Арбитражный суд города Москвы",
+        "address": "115225, г. Москва, ул. Б. Тульская, 17"
+    },
+    "B21-654321/2022": {
+        "court_name": "Арбитражный суд Санкт-Петербурга",
+        "address": "190000, г. Санкт-Петербург, ул. Нахимова, 9"
+    },
+    "C33-987654/2021": {
+        "court_name": "Арбитражный суд города Новосибирска",
+        "address": "630083, г. Новосибирск, ул. Ленина, 12"
+    }
+}
+
+# 3) Данные истца (пример)
+def claimant_example() -> Dict[str, str]:
+    """
+    Возвращает данные истца (пример). Замените на реальные данные, если нужно.
+    Поля: ФИО, адрес, паспортные данные
+    """
+    return {
+        "full_name": "Иванов Иван Иванович",
+        "address": "115001, г. Москва, ул. Примерная, д. 1",
+        "passport": "серия 1234 номер 567890, выдан 01.01.2015, орган: ОВД Москвы"
+    }
+
+# 4) Формирование шапки для процессуального документа
+def build_court_header(answerant: Dict[str, str], case_number: str) -> str:
+    """
+    Формирует шапку документа по данным ответчика и номеру дела.
+
+    Args:
+        answerant: словарь с данными ответчика:
+            {
+                "full_name": "...",
+                "address": "...",
+                "passport": "..."
+            }
+        case_number: номер дела (строка)
+
+    Returns:
+        Строка-шапка для процессуального документа.
+    """
+    case_info = _saks_data.get(case_number)
+    if not case_info:
+        raise ValueError(f"Не найден суд для номера дела: {case_number}")
+
+    court_name = case_info["court_name"]
+    court_address = case_info["address"]
+
+    claimant = claimant_example()
+
+    header = (
+        f"{court_name}\n"
+        f"Адрес: {court_address}\n"
+        f"Истец: {claimant['full_name']}\n"
+        f"Адрес истца: {claimant['address']}\n"
+        f"Паспорт истца: {claimant['passport']}\n"
+        f"Ответчик: {answerant.get('full_name')}\n"
+        f"Адрес ответчика: {answerant.get('address')}\n"
+        f"Паспорт ответчика: {answerant.get('passport')}\n"
+        f"Номер дела: {case_number}"
+    )
+    return header
+
+# 5) Генерация шапок для списка ответчиков
+def generate_headers_for_answerants(answerants: List[Dict[str, str]], case_map: Dict[int, str]) -> None:
+    """
+    Для каждого ответчика из списка генерирует шапку и выводит её в консоль.
+
+    Args:
+        answerants: список словарей данных ответчиков
+            каждый словарь должен содержать ключи: full_name, address, passport
+        case_map: карта индекса ответчика -> номер дела, например {0: "A40-123456/2023"}
+    """
+    for idx, ans in enumerate(answerants):
+        case_no = case_map.get(idx)
+        if not case_no:
+            print(f"[Ошибка] Нет номера дела для ответчика под индексом {idx}")
+            continue
+        header = build_court_header(ans, case_no)
+        print(header)
+        print("-" * 40)
+
+# 6) Пример использования
+if __name__ == "__main__":
+    answerants_example = [
+        {
+            "full_name": "ООО “Кооператив Рыба”",
+            "address": "123534, г. Москва, ул. Красивых молдавских партизан, 69",
+            "passport": "серия 4500 номер 123456, выдан 02.02.2010, Орган: УФМС Москвы"
+        },
+        {
+            "full_name": "ПАО Пример",
+            "address": "123534, г. Москва, ул. Водников, 13",
+            "passport": "серия 4600 номер 654321, выдан 03.03.2012, Орган: УФМС Москвы"
+        }
+    ]
+    case_map_example = {
+        0: "A40-123456/2023",
+        1: "B21-654321/2022"
+    }
+
+    generate_headers_for_answerants(answerants_example, case_map_example)
+
+    # Пример тестирования математических функций
+    print("Факториал 5 =", factorial(5))
+    print("Max из (3, 7, 2) =", max_of_three((3, 7, 2)))
+    print("Площадь прямоугольного треугольника со сторонами 3 и 4 =", area_of_right_triangle(3, 4))
